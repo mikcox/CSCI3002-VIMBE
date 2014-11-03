@@ -34,6 +34,100 @@
 		var startTheta = 0;
 		var endTheta = 0;
 		var orbitMode = true;
+		var recentTouches = [];
+		var objectsDrawn = false;
+		
+		var createMenuCanvas = function( x, y ) {
+			// Create the new canvas element
+			var menuDiv = document.createElement( 'div' );
+			menuDiv.className  = 'menuClass';
+			menuDiv.style.top = (y - 50) + 'px';
+			menuDiv.style.left = (x - 250) + 'px';
+			// Append the canvas element to the DOM
+			document.getElementById( 'container' ).appendChild( menuDiv );
+			
+			Sketch.create({
+				container: menuDiv,
+				autoclear: false,
+				fullscreen: false,
+				width: 500,
+				height: 500,
+				
+				setup: function() {
+					this.fillStyle = this.strokeStyle = '#00FF00';
+					this.lineWidth = 4;
+
+					// One arc for the orange bit
+					this.beginPath();
+					this.arc( 250, 50 , 20, 0, TWO_PI);
+					this.stroke();
+					
+					this.beginPath();
+					this.moveTo( 270, 50 );
+					this.lineTo( 310, 50 );
+					this.stroke();
+					
+					// save state
+					this.save();
+
+					  // translate context
+					  this.translate(250, 250);
+
+					  // scale context horizontally
+					  this.scale(2, 1);
+
+					  // draw circle which will be stretched into an oval
+					  this.beginPath();
+					  this.arc(360, 50, 50, 0, TWO_PI);
+
+					  // restore to original state
+					  this.restore();
+
+					  // apply styling
+					  this.fillStyle = '#8ED6FF';
+					  this.fill();
+					  this.lineWidth = 5;
+					  this.strokeStyle = 'black';
+					  this.stroke();
+					
+					console.log( 'menu canvas created' );
+				},
+				
+				// Mouse & touch events are merged, so handling touch events by default
+				// and powering sketches using the touches array is recommended for easy
+				// scalability. If you only need to handle the mouse / desktop browsers,
+				// use the 0th touch element and you get wider device support for free.
+
+				touchstart: function() {
+					var touch = this.touches[ this.touches.length - 1 ];
+					// If the new touch is within 10 pixels of a recent touch, then do something:
+					for ( var i = 0; i < recentTouches.length; i++ ) {
+						if ( abs(touch.x - recentTouches[i].x) < 10 && abs(touch.y - recentTouches[i].y) < 10) {
+							this.fillStyle = this.strokeStyle = '#00FF00';
+							this.lineWidth = 4;
+
+							// One arc for the orange bit
+							this.beginPath();
+							this.arc( touch.x , touch.y , 30, 0, TWO_PI);
+							this.stroke();
+							
+							//alert('double tap detected.  distance x=' + (touch.x - recentTouches[i].x) +', y= ' + (touch.y - recentTouches[i].y) );
+						}
+					}
+					
+					// Append the last touch event to our recentTouches array
+					recentTouches.push(touch);
+					//alert('touch saved: x=' + recentTouches[recentTouches.length-1].x+ ', y= ' +recentTouches[recentTouches.length-1].y );
+					// Set up a delay to delete this after 500 milliseconds (typical double-tap duration)
+					setTimeout(function(){
+						recentTouches.shift();
+					}, 500);
+					
+					
+					//alert('Touch start at x=' + touch.x + ', y=' + touch.y);
+				}
+			});
+		};
 
         Sketch.create({
 
@@ -41,7 +135,7 @@
             autoclear: false,
 
             setup: function() {
-                console.log( 'setup' );
+                console.log( 'initial canvas setup' );
             },
 
             update: function() {
@@ -76,6 +170,34 @@
             // scalability. If you only need to handle the mouse / desktop browsers,
             // use the 0th touch element and you get wider device support for free.
 
+			touchstart: function() {
+				var touch = this.touches[ this.touches.length - 1 ];
+				// If the new touch is within 10 pixels of a recent touch, then do something:
+				for ( var i = 0; i < recentTouches.length; i++ ) {
+					if ( (touch.x - recentTouches[i].x) < 10 && (touch.y - recentTouches[i].y) < 10) {
+						//alert('Double-tap detected.');
+						this.fillStyle = this.strokeStyle = '#FF7519';
+						this.lineWidth = 4;
+
+						// One arc for the orange bit
+						this.beginPath();
+						this.arc( touch.x , touch.y , 30, 0, TWO_PI);
+						this.stroke();
+						
+						// Tell the canvas that we have objects drawn!
+						createMenuCanvas( touch.x, touch.y );
+					}
+				}
+				
+				// Append the last touch event to our recentTouches array
+				recentTouches.push(touch);
+				// Set up a delay to delete this after 500 milliseconds (typical double-tap duration)
+				setTimeout(function(){
+					recentTouches.shift();
+				}, 500);
+				//alert('Touch start at x=' + touch.x + ', y=' + touch.y);
+			},
+			
             touchmove: function() {
 				if ( orbitMode ) {
 					for ( var i = this.touches.length - 1, touch; i >= 0; i-- ) {
@@ -92,7 +214,6 @@
 						this.beginPath();
 						this.arc( touch.x , touch.y , 50, startTheta, endTheta);
 						this.stroke();
-						// this.stroke();
 						// And 3 arcs that match the background to 'erase' the rest
 						//this.fillStyle =
 						this.strokeStyle = '#444452';
@@ -118,7 +239,7 @@
 
 						this.lineCap = 'round';
 						this.lineJoin = 'round';
-						this.fillStyle = this.strokeStyle = '#FF7519';
+						this.fillStyle = this.strokeStyle = '#4D4DFF';
 						this.lineWidth = 3;
 
 						// One arc for the orange bit
@@ -134,8 +255,8 @@
 			// We have to erase each orange particle we created when we stop touching the screen
 			touchend:  function() {
 				if ( orbitMode ) {
-					// Too drastic for our end game, but this clears the whole canvas if we don't have any touch events
-					if ( this.touches.length === 0 ) {
+					// Too drastic for our end game, but this clears the whole canvas if we don't have any touch events or objects drawn
+					if ( this.touches.length === 0 && !objectsDrawn ) {
 						this.clear();
 						return;
 					}

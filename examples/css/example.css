@@ -35,6 +35,19 @@ html, body {
     100% { transform: rotateY(0deg); }
 }
 
+/* Containers and Menu Classes */
+#container {
+	z-index: 0;
+	position: absolute;
+}
+.menuClass {
+	background: white;
+	position: absolute;
+	width: 500px;
+	height: 500px;
+	z-index: 1;
+}
+
 .info {
 
     -webkit-transition: all 180ms ease-out;
