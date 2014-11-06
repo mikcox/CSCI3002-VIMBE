@@ -36,10 +36,88 @@
 		var orbitMode = true;
 		var recentTouches = [];
 		var objectsDrawn = false;
+		var whiskeyOpen = false;
+		
+		var openSpecialsDiv = function( containerId ) {
+			if ( !this.specialsMenuOpen ) { // If the specials menu isn't open, open it
+				var specialsDiv = document.createElement( 'div' );
+				specialsDiv.className = 'specialsClass';
+				specialsDiv.style.top = '115px';
+				specialsDiv.style.left = '250px';
+				specialsDiv.innerHTML = 
+				'<table><th>Specials</th>' +
+				'<tr><td>Long Island Iced Tea</td></tr>' +
+				'<tr><td>Whiskey Sour</td></tr>' +
+				'<tr><td>White Russian</td></tr>' +
+				'';
+				document.getElementById( containerId ).appendChild( specialsDiv );
+				
+				var table = specialsDiv.getElementsByTagName("td")[1];
+				table.onclick = function (e) {
+					e = e || window.event;
+					alert('Whiskey Sour Clicked');
+				};
+				
+				this.specialsMenuOpen = true;
+			} else { // If we already have the specials div open, close it
+				var container = document.getElementById( containerId );
+				var table = container.getElementsByClassName( 'specialsClass' )[0];
+				container.removeChild( table );
+				this.specialsMenuOpen = false;
+			}
+			
+		};
+		
+		var openByAlcoholTypeDiv = function( containerId ) {
+			if ( !this.byAlcoholTypeMenuOpen ) {
+				var specialsDiv = document.createElement( 'div' );
+				specialsDiv.className = 'byAlcoholTypeClass';
+				specialsDiv.style.top = '115px';
+				specialsDiv.style.left = '0px';
+				specialsDiv.innerHTML = 
+				'<table><th>Drinks By Alcohol Type</th>' +
+				'<tr><td>Gin</td></tr>' +
+				'<tr><td>Vodka</td></tr>' +
+				'<tr><td>Whiskey</td></tr>' +
+				'';
+				document.getElementById( containerId ).appendChild( specialsDiv );
+				
+				var tableRow = specialsDiv.getElementsByTagName("td")[2];
+				tableRow.onclick = function (e) {
+					if( whiskeyOpen ) {
+						return;
+					}
+					e = e || window.event;
+					whiskeyOpen = true;
+					var drinkTable = document.createElement( 'div' );
+					drinkTable.className = 'drinkSubMenu';
+					drinkTable.innerHTML = 
+					'<table>' +
+					'<tr><td>Old Fashioned</td></tr>' +
+					'<tr><td>Rye Manhattan</td></tr>' +
+					'<tr><td>Whiskey Sour</td></tr>' +
+					'';
+					tableRow.appendChild( drinkTable );
+					
+					var whiskeyRow = drinkTable.getElementsByTagName( 'td' )[2];
+					whiskeyRow.onclick = function() {
+						alert( 'Whiskey Sour Ordered!' );
+					};
+				};
+				this.byAlcoholTypeMenuOpen = true;
+			} else { // If we already have the specials div open, close it
+				var container = document.getElementById( containerId );
+				var table = container.getElementsByClassName( 'byAlcoholTypeClass' )[0];
+				container.removeChild( table );
+				this.byAlcoholTypeMenuOpen = false;
+			}
+			
+		};
 		
 		var createMenuCanvas = function( x, y ) {
 			// Create the new canvas element
 			var menuDiv = document.createElement( 'div' );
+			menuDiv.id = 'menu' + x + '' + y;
 			menuDiv.className  = 'menuClass';
 			menuDiv.style.top = (y - 50) + 'px';
 			menuDiv.style.left = (x - 250) + 'px';
@@ -54,41 +132,49 @@
 				height: 500,
 				
 				setup: function() {
-					this.fillStyle = this.strokeStyle = '#00FF00';
+					
+					this.specialsMenuOpen = false;
+					this.byAlcoholTypeMenuOpen = false;
+				
+					this.fillStyle = this.strokeStyle = '#FFFFFF';
 					this.lineWidth = 4;
 
-					// One arc for the orange bit
+					// Center circle
 					this.beginPath();
 					this.arc( 250, 50 , 20, 0, TWO_PI);
 					this.stroke();
 					
 					this.beginPath();
 					this.moveTo( 270, 50 );
-					this.lineTo( 310, 50 );
+					this.lineTo( 340, 50 );
 					this.stroke();
 					
-					// save state
-					this.save();
-
-					  // translate context
-					  this.translate(250, 250);
-
-					  // scale context horizontally
-					  this.scale(2, 1);
-
-					  // draw circle which will be stretched into an oval
-					  this.beginPath();
-					  this.arc(360, 50, 50, 0, TWO_PI);
-
-					  // restore to original state
-					  this.restore();
-
-					  // apply styling
-					  this.fillStyle = '#8ED6FF';
-					  this.fill();
-					  this.lineWidth = 5;
-					  this.strokeStyle = 'black';
-					  this.stroke();
+					// Right circle
+					this.beginPath();
+					this.arc( 385, 50 , 45, 0, TWO_PI);
+					this.stroke();
+					
+					this.font = "18px Georgia";
+					this.textAlign = "center";
+					this.fillText( "Specials" , 385, 56 );
+					
+					this.beginPath();
+					this.moveTo( 230, 50 );
+					this.lineTo( 160, 50 );
+					this.stroke();
+					
+					// Left circle
+					this.beginPath();
+					this.arc( 115, 50 , 45, 0, TWO_PI);
+					this.stroke();
+					
+					this.font = "13px Georgia";
+					this.textAlign = "center";
+					this.fillText( "Order By" , 115, 45 );
+					this.textAlign = "center";
+					this.fillText( "Alcohol Type" , 115, 63 );
+					
+					
 					
 					console.log( 'menu canvas created' );
 				},
@@ -99,7 +185,19 @@
 				// use the 0th touch element and you get wider device support for free.
 
 				touchstart: function() {
+								
 					var touch = this.touches[ this.touches.length - 1 ];
+					
+					// Detect if we are touching the 'specials' button
+					if ( touch.x < 430 && touch.x > 340 && touch.y < 95 && touch.y > 5 ) {
+						openSpecialsDiv( menuDiv.id );
+					}
+					
+					if ( touch.x < 160 && touch.x > 70 && touch.y < 95 && touch.y > 5 ) {
+						openByAlcoholTypeDiv( menuDiv.id );
+					}
+					
+					/*
 					// If the new touch is within 10 pixels of a recent touch, then do something:
 					for ( var i = 0; i < recentTouches.length; i++ ) {
 						if ( abs(touch.x - recentTouches[i].x) < 10 && abs(touch.y - recentTouches[i].y) < 10) {
@@ -122,9 +220,7 @@
 					setTimeout(function(){
 						recentTouches.shift();
 					}, 500);
-					
-					
-					//alert('Touch start at x=' + touch.x + ', y=' + touch.y);
+					*/
 				}
 			});
 		};
@@ -190,7 +286,7 @@
 				}
 				
 				// Append the last touch event to our recentTouches array
-				recentTouches.push(touch);
+				recentTouches.push( touch );
 				// Set up a delay to delete this after 500 milliseconds (typical double-tap duration)
 				setTimeout(function(){
 					recentTouches.shift();

@@ -41,12 +41,66 @@ html, body {
 	position: absolute;
 }
 .menuClass {
-	background: white;
+	background: #444452;
 	position: absolute;
 	width: 500px;
 	height: 500px;
 	z-index: 1;
 }
+
+.specialsClass {
+	position: absolute;
+	width: 250px;
+	height: 385px;
+	z-index: 2;
+}
+
+.specialsClass table{
+	width: 250px;
+	text-align: center;
+}
+
+.specialsClass table, tr, td{
+	color: white;
+	border: 1px solid white;
+	text-overflow:ellipsis;
+}
+
+.byAlcoholTypeClass {
+	position: absolute;
+	width: 250px;
+	height: 385px;
+	z-index: 2;
+}
+
+.byAlcoholTypeClass table{
+	width: 250px;
+	text-align: center;
+}
+
+.byAlcoholTypeClass table, tr, td{
+	color: white;
+	border: 1px solid white;
+	text-overflow:ellipsis;
+}
+
+.drinkSubMenu {
+	width: 100%;
+	height: 100%;
+}
+
+.drinkSubMenu table{
+	width: 80%;
+	text-align: left;
+	margin-left: 20%;
+}
+
+.drinkSubMenu table, tr, td{
+	color: black;
+	border: 1px solid black;
+	text-overflow:ellipsis;
+}
+
 
 .info {
 
