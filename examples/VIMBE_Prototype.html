@@ -3,6 +3,7 @@
     <head>
         <title>VIMBE Prototype</title>
         <link rel="stylesheet" href="css/example.css">
+		 <link rel="stylesheet" href="css/animate.css">
         <style type="text/css">
             html, body {
                 background: #444452;
@@ -13,8 +14,7 @@
         <div id="container"></div>
         <header class="info">
             <hgroup class="about">
-                <h1>Built with sketch.js</h1>
-                <h2>Mostly copied from the drawing example in sketch.js</h2>
+                <h1>Double-tap to Order!</h1>
 				<h3>The 'c' key clears the canvas.</h3>
 				<h3>The 'm' key toggles modes.</h3>
                 <h3>Use your fingers to start drawing!</h3>
@@ -36,14 +36,17 @@
 		var orbitMode = true;
 		var recentTouches = [];
 		var objectsDrawn = false;
+		var specialsMenuOpen = false;
+		var byAlcoholTypeMenuOpen = false;
 		var whiskeyOpen = false;
+		var contianer;
+		var table;
+		var container2;
+		var table2;
 		
 		var openSpecialsDiv = function( containerId ) {
-			if ( !this.specialsMenuOpen ) { // If the specials menu isn't open, open it
+			if ( !specialsMenuOpen ) { // If the specials menu isn't open, open it
 				var specialsDiv = document.createElement( 'div' );
-				specialsDiv.className = 'specialsClass';
-				specialsDiv.style.top = '115px';
-				specialsDiv.style.left = '250px';
 				specialsDiv.innerHTML = 
 				'<table><th>Specials</th>' +
 				'<tr><td>Long Island Iced Tea</td></tr>' +
@@ -51,29 +54,33 @@
 				'<tr><td>White Russian</td></tr>' +
 				'';
 				document.getElementById( containerId ).appendChild( specialsDiv );
+				setTimeout( function() {
+					specialsDiv.className = 'specialsClass animated fadeInDown';
+					specialsDiv.style.top = '115px';
+					specialsDiv.style.left = '250px';
+				}, 0);
 				
 				var table = specialsDiv.getElementsByTagName("td")[1];
 				table.onclick = function (e) {
 					e = e || window.event;
-					alert('Whiskey Sour Clicked');
+					alert('Whiskey Sour Ordered!');
 				};
 				
-				this.specialsMenuOpen = true;
+				specialsMenuOpen = true;
 			} else { // If we already have the specials div open, close it
-				var container = document.getElementById( containerId );
-				var table = container.getElementsByClassName( 'specialsClass' )[0];
-				container.removeChild( table );
-				this.specialsMenuOpen = false;
+				container2 = document.getElementById( containerId );
+				table2 = container2.getElementsByClassName( 'specialsClass' )[0];
+				table2.className += ' fadeOutUp';
+				//container2.removeChild( table2 );
+				setTimeout( 'container2.removeChild( table2 )', 500);				
+				specialsMenuOpen = false;
 			}
 			
 		};
 		
 		var openByAlcoholTypeDiv = function( containerId ) {
-			if ( !this.byAlcoholTypeMenuOpen ) {
+			if ( !byAlcoholTypeMenuOpen ) {
 				var specialsDiv = document.createElement( 'div' );
-				specialsDiv.className = 'byAlcoholTypeClass';
-				specialsDiv.style.top = '115px';
-				specialsDiv.style.left = '0px';
 				specialsDiv.innerHTML = 
 				'<table><th>Drinks By Alcohol Type</th>' +
 				'<tr><td>Gin</td></tr>' +
@@ -81,6 +88,11 @@
 				'<tr><td>Whiskey</td></tr>' +
 				'';
 				document.getElementById( containerId ).appendChild( specialsDiv );
+				setTimeout( function() {
+					specialsDiv.className = 'byAlcoholTypeClass animated fadeInDown';
+					specialsDiv.style.top = '115px';
+					specialsDiv.style.left = '0px';
+				}, 0);
 				
 				var tableRow = specialsDiv.getElementsByTagName("td")[2];
 				tableRow.onclick = function (e) {
@@ -90,7 +102,6 @@
 					e = e || window.event;
 					whiskeyOpen = true;
 					var drinkTable = document.createElement( 'div' );
-					drinkTable.className = 'drinkSubMenu';
 					drinkTable.innerHTML = 
 					'<table>' +
 					'<tr><td>Old Fashioned</td></tr>' +
@@ -98,18 +109,23 @@
 					'<tr><td>Whiskey Sour</td></tr>' +
 					'';
 					tableRow.appendChild( drinkTable );
+					setTimeout( function() {
+						drinkTable.className = 'drinkSubMenu'
+					}, 0);
 					
 					var whiskeyRow = drinkTable.getElementsByTagName( 'td' )[2];
 					whiskeyRow.onclick = function() {
 						alert( 'Whiskey Sour Ordered!' );
 					};
 				};
-				this.byAlcoholTypeMenuOpen = true;
-			} else { // If we already have the specials div open, close it
-				var container = document.getElementById( containerId );
-				var table = container.getElementsByClassName( 'byAlcoholTypeClass' )[0];
-				container.removeChild( table );
-				this.byAlcoholTypeMenuOpen = false;
+				byAlcoholTypeMenuOpen = true;
+			} else { // If we already have the alcohol type div open, close it
+				container = document.getElementById( containerId );
+				table = container.getElementsByClassName( 'byAlcoholTypeClass' )[0];
+				table.className += ' fadeOutUp';
+				setTimeout( 'container.removeChild( table )', 500);
+				byAlcoholTypeMenuOpen = false;
+				whiskeyOpen = false;
 			}
 			
 		};
@@ -132,9 +148,6 @@
 				height: 500,
 				
 				setup: function() {
-					
-					this.specialsMenuOpen = false;
-					this.byAlcoholTypeMenuOpen = false;
 				
 					this.fillStyle = this.strokeStyle = '#FFFFFF';
 					this.lineWidth = 4;
@@ -197,19 +210,14 @@
 						openByAlcoholTypeDiv( menuDiv.id );
 					}
 					
-					/*
+					
 					// If the new touch is within 10 pixels of a recent touch, then do something:
 					for ( var i = 0; i < recentTouches.length; i++ ) {
 						if ( abs(touch.x - recentTouches[i].x) < 10 && abs(touch.y - recentTouches[i].y) < 10) {
-							this.fillStyle = this.strokeStyle = '#00FF00';
-							this.lineWidth = 4;
-
-							// One arc for the orange bit
-							this.beginPath();
-							this.arc( touch.x , touch.y , 30, 0, TWO_PI);
-							this.stroke();
-							
-							//alert('double tap detected.  distance x=' + (touch.x - recentTouches[i].x) +', y= ' + (touch.y - recentTouches[i].y) );
+							document.getElementById( 'container' ).removeChild( this.container );
+							specialsMenuOpen = false;
+							byAlcoholTypeMenuOpen = false;
+							whiskeyOpen = false;
 						}
 					}
 					
@@ -220,7 +228,7 @@
 					setTimeout(function(){
 						recentTouches.shift();
 					}, 500);
-					*/
+					
 				}
 			});
 		};

@@ -52,6 +52,7 @@ html, body {
 	position: absolute;
 	width: 250px;
 	height: 385px;
+	font-size: 20px;
 	z-index: 2;
 }
 
@@ -66,10 +67,15 @@ html, body {
 	text-overflow:ellipsis;
 }
 
+.specialsClass tr, td{
+	padding: 10px;
+}
+
 .byAlcoholTypeClass {
 	position: absolute;
 	width: 250px;
 	height: 385px;
+	font-size: 20px;
 	z-index: 2;
 }
 
@@ -96,8 +102,8 @@ html, body {
 }
 
 .drinkSubMenu table, tr, td{
-	color: black;
-	border: 1px solid black;
+	color: white;
+	border: 1px solid white;
 	text-overflow:ellipsis;
 }
 
