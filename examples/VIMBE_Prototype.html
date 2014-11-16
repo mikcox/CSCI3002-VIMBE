@@ -26,6 +26,27 @@
         </header>
         <script src="../js/sketch.js"></script>
         <script>
+            
+            /*
+             ——————————————————————————————————————————————————————————————————————————————————
+             CHANGE NOTES HERE      (these change notes can be deleted once read over)
+             
+             added scale variable
+                1 = 100% (current size)
+                implemented scale variable to change menu size
+                note: does not change table sizes or text size
+             added scale icon
+                it's an extra corner at the bottom right corner of the menu
+             tried to add scale function
+                based on touch move and the scale icon
+                commented out, because it stops the code from working
+             added close menu button
+                functions as intended
+                left in the double-tap to close function
+             added menu div border
+
+             ——————————————————————————————————————————————————————————————————————————————————
+             */
 
         var COLOURS = [ '#E3EB64', '#A7EBCA', '#FFFFFF', '#D8EBA7', '#868E80' ];
         var radius = 0;
@@ -43,6 +64,7 @@
 		var table;
 		var container2;
 		var table2;
+        var scale = 1;
 		
 		var openSpecialsDiv = function( containerId ) {
 			if ( !specialsMenuOpen ) { // If the specials menu isn't open, open it
@@ -144,48 +166,91 @@
 				container: menuDiv,
 				autoclear: false,
 				fullscreen: false,
-				width: 500,
-				height: 500,
+				width: (500 * scale),
+				height: (500 * scale),
 				
 				setup: function() {
 				
 					this.fillStyle = this.strokeStyle = '#FFFFFF';
 					this.lineWidth = 4;
+                          
+                    //Border
+                    this.beginPath();
+                    this.moveTo( (0 * scale), (0 * scale) );
+                    this.lineTo( (500 * scale), (0 * scale) );
+                    this.stroke();
+                    this.beginPath();
+                    this.moveTo( (0 * scale), (500 * scale) );
+                    this.lineTo( (500 * scale), (500 * scale) );
+                    this.stroke();
+                    this.beginPath();
+                    this.moveTo( (0 * scale), (0 * scale) );
+                    this.lineTo( (0 * scale), (500 * scale) );
+                    this.stroke();
+                    this.beginPath();
+                    this.moveTo( (500 * scale), (0 * scale) );
+                    this.lineTo( (500 * scale), (500 * scale) );
+                    this.stroke();
+                          
+                    //Border scaler signal
+                    this.beginPath();
+                    this.moveTo( (480 * scale), (493 * scale) );
+                    this.lineTo( (493 * scale), (493 * scale) );
+                    this.stroke();
+                    this.beginPath();
+                    this.moveTo( (493 * scale), (480 * scale) );
+                    this.lineTo( (493 * scale), (493 * scale) );
+                    this.stroke();
+
 
 					// Center circle
 					this.beginPath();
-					this.arc( 250, 50 , 20, 0, TWO_PI);
+					this.arc( (250 * scale), (50 * scale) , (20 * scale), 0, TWO_PI);
 					this.stroke();
 					
 					this.beginPath();
-					this.moveTo( 270, 50 );
-					this.lineTo( 340, 50 );
+					this.moveTo( (270 * scale), (50 * scale) );
+					this.lineTo( (340 * scale), (50 * scale) );
 					this.stroke();
+                          
+                    // Clear Menu Circle
+                    this.beginPath();
+                    this.arc( (275 * scale), (25 * scale) , (10 * scale), 0, TWO_PI);
+                    this.stroke();
+                          
+                    this.beginPath();
+                    this.moveTo( (271 * scale), (21 * scale) );
+                    this.lineTo( (279 * scale), (29 * scale) );
+                    this.stroke();
+                    this.beginPath();
+                    this.moveTo( (271 * scale), (29 * scale) );
+                    this.lineTo( (279 * scale), (21 * scale) );
+                    this.stroke();
 					
 					// Right circle
 					this.beginPath();
-					this.arc( 385, 50 , 45, 0, TWO_PI);
+					this.arc( (385 * scale), (50 * scale) , (45 * scale), 0, TWO_PI);
 					this.stroke();
 					
 					this.font = "18px Georgia";
 					this.textAlign = "center";
-					this.fillText( "Specials" , 385, 56 );
+					this.fillText( "Specials" , (385 * scale), (56 * scale) );
 					
 					this.beginPath();
-					this.moveTo( 230, 50 );
-					this.lineTo( 160, 50 );
+					this.moveTo( (230 * scale), (50 * scale) );
+					this.lineTo( (160 * scale), (50 * scale) );
 					this.stroke();
 					
 					// Left circle
 					this.beginPath();
-					this.arc( 115, 50 , 45, 0, TWO_PI);
+					this.arc( (115 * scale), (50 * scale) , (45 * scale), 0, TWO_PI);
 					this.stroke();
 					
 					this.font = "13px Georgia";
 					this.textAlign = "center";
-					this.fillText( "Order By" , 115, 45 );
+					this.fillText( "Order By" , (115 * scale), (45 * scale) );
 					this.textAlign = "center";
-					this.fillText( "Alcohol Type" , 115, 63 );
+					this.fillText( "Alcohol Type" , (115 * scale), (63 * scale) );
 					
 					
 					
@@ -202,14 +267,20 @@
 					var touch = this.touches[ this.touches.length - 1 ];
 					
 					// Detect if we are touching the 'specials' button
-					if ( touch.x < 430 && touch.x > 340 && touch.y < 95 && touch.y > 5 ) {
+					if ( touch.x < (430 * scale) && touch.x > (340 * scale) && touch.y < (95 * scale) && touch.y > (5 * scale) ) {
 						openSpecialsDiv( menuDiv.id );
 					}
 					
-					if ( touch.x < 160 && touch.x > 70 && touch.y < 95 && touch.y > 5 ) {
+					if ( touch.x < (160 * scale) && touch.x > (70 * scale) && touch.y < (95 * scale) && touch.y > (5 * scale) ) {
 						openByAlcoholTypeDiv( menuDiv.id );
-					}
-					
+                    }
+                          
+                    if ( touch.x < (280 * scale) && touch.x > (270 * scale) && touch.y < (30 * scale) && touch.y > (20 * scale) ) {
+                        document.getElementById( 'container' ).removeChild( this.container );
+                        specialsMenuOpen = false;
+                        byAlcoholTypeMenuOpen = false;
+                        whiskeyOpen = false;
+                    }
 					
 					// If the new touch is within 10 pixels of a recent touch, then do something:
 					for ( var i = 0; i < recentTouches.length; i++ ) {
@@ -230,6 +301,19 @@
 					}, 500);
 					
 				}
+                /*
+                //this is supposed to make the menu scale, but instead it breaks everything :)
+                touchmove: function() {
+                    for ( var i = this.touches.length - 1, touch; i >= 0; i-- ) {
+                        touch = this.touches[i];
+                        // Detect if touch is on scale icon
+                        if ( touch.x > (480 * scale) && touch.x < (500 * scale) && touch.y < (500 * scale) && touch.y > (480 * scale) ) {
+                          // Adjust Scale
+                          scale = scale * (1 + ( sqrt( touch.dx * touch.dx + touch.dy * touch.dy ) / 500 ) );
+                        }
+                    }
+                }
+                */
 			});
 		};
 
