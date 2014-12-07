@@ -31,19 +31,7 @@
              ——————————————————————————————————————————————————————————————————————————————————
              CHANGE NOTES HERE      (these change notes can be deleted once read over)
              
-             added scale variable
-                1 = 100% (current size)
-                implemented scale variable to change menu size
-                note: does not change table sizes or text size
-             added scale icon
-                it's an extra corner at the bottom right corner of the menu
-             tried to add scale function
-                based on touch move and the scale icon
-                commented out, because it stops the code from working
-             added close menu button
-                functions as intended
-                left in the double-tap to close function
-             added menu div border
+             added scale functionality... YAY!!!
 
              ——————————————————————————————————————————————————————————————————————————————————
              */
@@ -158,7 +146,9 @@
 			menuDiv.id = 'menu' + x + '' + y;
 			menuDiv.className  = 'menuClass';
 			menuDiv.style.top = (y - 50) + 'px';
-			menuDiv.style.left = (x - 250) + 'px';
+            menuDiv.style.left = (x - 250) + 'px';
+            menuDiv.mitop = y - 50;
+            menuDiv.mileft = x - 250;
 			// Append the canvas element to the DOM
 			document.getElementById( 'container' ).appendChild( menuDiv );
 			
@@ -192,14 +182,18 @@
                     this.lineTo( (500 * scale), (500 * scale) );
                     this.stroke();
                           
-                    //Border scaler signal
+                    //Border scaler buttons
                     this.beginPath();
-                    this.moveTo( (480 * scale), (493 * scale) );
-                    this.lineTo( (493 * scale), (493 * scale) );
+                    this.moveTo( (490 * scale), (483 * scale) );
+                    this.lineTo( (490 * scale), (497 * scale) );
                     this.stroke();
                     this.beginPath();
-                    this.moveTo( (493 * scale), (480 * scale) );
-                    this.lineTo( (493 * scale), (493 * scale) );
+                    this.moveTo( (483 * scale), (490 * scale) );
+                    this.lineTo( (497 * scale), (490 * scale) );
+                    this.stroke();
+                    this.beginPath();
+                    this.moveTo( (453 * scale), (490 * scale) );
+                    this.lineTo( (467 * scale), (490 * scale) );
                     this.stroke();
 
 
@@ -275,11 +269,45 @@
 						openByAlcoholTypeDiv( menuDiv.id );
                     }
                           
-                    if ( touch.x < (280 * scale) && touch.x > (270 * scale) && touch.y < (30 * scale) && touch.y > (20 * scale) ) {
+                    if ( touch.x < (285 * scale) && touch.x > (270 * scale) && touch.y < (30 * scale) && touch.y > (15 * scale) ) {
                         document.getElementById( 'container' ).removeChild( this.container );
                         specialsMenuOpen = false;
                         byAlcoholTypeMenuOpen = false;
                         whiskeyOpen = false;
+                    }
+                    if ( touch.x < (500 * scale) && touch.x > (470 * scale) && touch.y < (500 * scale) && touch.y > (470 * scale) ) {
+                          scale += .1
+                          document.getElementById( 'container' ).removeChild( this.container );
+                          specialsMenuOpen = false;
+                          byAlcoholTypeMenuOpen = false;
+                          whiskeyOpen = false;
+                          this.fillStyle = this.strokeStyle = '#FF7519';
+                          this.lineWidth = 4;
+                          
+                          // One arc for the orange bit
+                          this.beginPath();
+                          this.arc( menuDiv.mileft + 250, menuDiv.mitop + 50, 30, 0, TWO_PI);
+                          this.stroke();
+                          
+                          // Tell the canvas that we have objects drawn!
+                          createMenuCanvas( menuDiv.mileft + 250, menuDiv.mitop + 50);
+                    }
+                    if ( touch.x < (470 * scale) && touch.x > (440 * scale) && touch.y < (500 * scale) && touch.y > (470 * scale) ) {
+                          scale -= .1
+                          document.getElementById( 'container' ).removeChild( this.container );
+                          specialsMenuOpen = false;
+                          byAlcoholTypeMenuOpen = false;
+                          whiskeyOpen = false;
+                          this.fillStyle = this.strokeStyle = '#FF7519';
+                          this.lineWidth = 4;
+                          
+                          // One arc for the orange bit
+                          this.beginPath();
+                          this.arc( menuDiv.mileft + 250, menuDiv.mitop + 50, 30, 0, TWO_PI);
+                          this.stroke();
+                          
+                          // Tell the canvas that we have objects drawn!
+                          createMenuCanvas( menuDiv.mileft + 250, menuDiv.mitop + 50 );
                     }
 					
 					// If the new touch is within 10 pixels of a recent touch, then do something:
@@ -299,21 +327,7 @@
 					setTimeout(function(){
 						recentTouches.shift();
 					}, 500);
-					
 				}
-                /*
-                //this is supposed to make the menu scale, but instead it breaks everything :)
-                touchmove: function() {
-                    for ( var i = this.touches.length - 1, touch; i >= 0; i-- ) {
-                        touch = this.touches[i];
-                        // Detect if touch is on scale icon
-                        if ( touch.x > (480 * scale) && touch.x < (500 * scale) && touch.y < (500 * scale) && touch.y > (480 * scale) ) {
-                          // Adjust Scale
-                          scale = scale * (1 + ( sqrt( touch.dx * touch.dx + touch.dy * touch.dy ) / 500 ) );
-                        }
-                    }
-                }
-                */
 			});
 		};
 
