@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
     <head>
-        <title>VIMBE Prototype</title>
+        <title>VIMBE Bartop Prototype</title>
         <link rel="stylesheet" href="css/example.css">
 		 <link rel="stylesheet" href="css/animate.css">
         <style type="text/css">
@@ -14,9 +14,10 @@
         <div id="container"></div>
         <header class="info">
             <hgroup class="about">
-                <h1>Double-tap to Order!</h1>
-				<h3>The 'c' key clears the canvas.</h3>
+                <h1>VIMBE Bartop Prototype</h1>
+				<h3>Double-tap to Order!</h3>
 				<h3>The 'm' key toggles modes.</h3>
+				<h3>The 'c' key clears the canvas.</h3>
                 <h3>Use your fingers to start drawing!</h3>
             </hgroup>
             <nav class="more">
@@ -31,18 +32,87 @@
              ——————————————————————————————————————————————————————————————————————————————————
              CHANGE NOTES HERE      (these change notes can be deleted once read over)
              
-             added scale functionality... YAY!!!
-
+			 Ross:
+             - added scale functionality... YAY!!!
+			 
+			 Mik:
+			 - New visual feature: particles
+			 - Implemented 'page the bartender' icon/button
+			 - Multi-touch tolerances loosened spatially, tightened temporally
+			 - '(double-tap to close)' text on each menu
+			 - Added more drink types
+			     - Menus now scroll when necessary
+			 - Bug fixes
+			     - absolute value issue with multi-touch checking
+				 - scaling the menu now changes size of text
+			 - Styling changes
+			     - Borders, etc
+				 - Only using grayscale in menus means friendly for colorblind users
+				 - Info box modification
              ——————————————————————————————————————————————————————————————————————————————————
              */
 
-        var COLOURS = [ '#E3EB64', '#A7EBCA', '#FFFFFF', '#D8EBA7', '#868E80' ];
-        var radius = 0;
+			 
+		// Particle stuff
+		function Particle( x, y, radius ) {
+            this.init( x, y, radius );
+        }
+		
+		Particle.prototype = {
+
+            init: function( x, y, radius ) {
+
+                this.alive = true;
+
+                this.radius = radius || 10;
+                this.wander = 0.15;
+                this.theta = random( TWO_PI );
+                this.drag = 0.92;
+                this.color = '#fff';
+
+                this.x = x || 0.0;
+                this.y = y || 0.0;
+
+                this.vx = 0.0;
+                this.vy = 0.0;
+            },
+
+            move: function() {
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                this.vx *= this.drag;
+                this.vy *= this.drag;
+
+                this.theta += random( -0.5, 0.5 ) * this.wander;
+                this.vx += sin( this.theta ) * 0.1;
+                this.vy += cos( this.theta ) * 0.1;
+
+                this.radius *= 0.96;
+                this.alive = this.radius > 0.5;
+            },
+
+            draw: function( ctx ) {
+
+                ctx.beginPath();
+                ctx.arc( this.x, this.y, this.radius, 0, TWO_PI );
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+        }; // End particle stuff
+		
+		
+        var COLOURS = [ '#69D2E7', '#A7DBD8', '#E0E4CC', '#F38630', '#FA6900', '#FF4E50', '#F9D423' ];
+		var MAX_PARTICLES = 250;
+        //var radius = 0;
 		var xOffset = 0;
 		var yOffset = 0;
 		var startTheta = 0;
 		var endTheta = 0;
-		var orbitMode = true;
+		var mode = 0;
+		var particles = [];
+        var pool = [];
 		var recentTouches = [];
 		var objectsDrawn = false;
 		var specialsMenuOpen = false;
@@ -54,11 +124,14 @@
 		var table2;
         var scale = 1;
 		
+		
+		
 		var openSpecialsDiv = function( containerId ) {
 			if ( !specialsMenuOpen ) { // If the specials menu isn't open, open it
 				var specialsDiv = document.createElement( 'div' );
 				specialsDiv.innerHTML = 
-				'<table><th>Specials</th>' +
+				'<table>'+//<th>Specials</th>' +
+				'<tr><td>Black and Tan</td></tr>' +
 				'<tr><td>Long Island Iced Tea</td></tr>' +
 				'<tr><td>Whiskey Sour</td></tr>' +
 				'<tr><td>White Russian</td></tr>' +
@@ -66,11 +139,11 @@
 				document.getElementById( containerId ).appendChild( specialsDiv );
 				setTimeout( function() {
 					specialsDiv.className = 'specialsClass animated fadeInDown';
-					specialsDiv.style.top = '115px';
-					specialsDiv.style.left = '250px';
+					specialsDiv.style.top = (115 * scale).toString() + 'px';
+					specialsDiv.style.left = (250 * scale).toString() + 'px';
 				}, 0);
 				
-				var table = specialsDiv.getElementsByTagName("td")[1];
+				var table = specialsDiv.getElementsByTagName("td")[2];
 				table.onclick = function (e) {
 					e = e || window.event;
 					alert('Whiskey Sour Ordered!');
@@ -92,19 +165,27 @@
 			if ( !byAlcoholTypeMenuOpen ) {
 				var specialsDiv = document.createElement( 'div' );
 				specialsDiv.innerHTML = 
-				'<table><th>Drinks By Alcohol Type</th>' +
+				'<table>'+//<th>Drinks By Alcohol Type</th>' +
+				'<tr><td>Absinthe</td></tr>' +
+				'<tr><td>Beer</td></tr>' +
+				'<tr><td>Brandy</td></tr>' +
+				'<tr><td>Champagne</td></tr>' +
 				'<tr><td>Gin</td></tr>' +
+				'<tr><td>Rum</td></tr>' +
+				'<tr><td>Sake</td></tr>' +
+				'<tr><td>Tequila</td></tr>' +
 				'<tr><td>Vodka</td></tr>' +
 				'<tr><td>Whiskey</td></tr>' +
 				'';
+				specialsDiv.style.border = '1px solid #999999';
 				document.getElementById( containerId ).appendChild( specialsDiv );
 				setTimeout( function() {
 					specialsDiv.className = 'byAlcoholTypeClass animated fadeInDown';
-					specialsDiv.style.top = '115px';
+					specialsDiv.style.top = (115 * scale).toString() + 'px';
 					specialsDiv.style.left = '0px';
 				}, 0);
 				
-				var tableRow = specialsDiv.getElementsByTagName("td")[2];
+				var tableRow = specialsDiv.getElementsByTagName("td")[9];
 				tableRow.onclick = function (e) {
 					if( whiskeyOpen ) {
 						return;
@@ -226,7 +307,7 @@
 					this.arc( (385 * scale), (50 * scale) , (45 * scale), 0, TWO_PI);
 					this.stroke();
 					
-					this.font = "18px Georgia";
+					this.font = (18 * scale).toString() + "px Georgia";
 					this.textAlign = "center";
 					this.fillText( "Specials" , (385 * scale), (56 * scale) );
 					
@@ -240,16 +321,30 @@
 					this.arc( (115 * scale), (50 * scale) , (45 * scale), 0, TWO_PI);
 					this.stroke();
 					
-					this.font = "13px Georgia";
+					this.font = (13 * scale).toString() + "px Georgia";
 					this.textAlign = "center";
 					this.fillText( "Order By" , (115 * scale), (45 * scale) );
 					this.textAlign = "center";
 					this.fillText( "Alcohol Type" , (115 * scale), (63 * scale) );
 					
+					this.textAlign="left";
+					this.fillText("(double-tap to close)", (5 * scale), (494 * scale));
 					
+					// Page bartender button
+					var bartenderDiv = document.createElement( 'div' );
+					bartenderDiv.style.position = 'absolute';
+					bartenderDiv.style.top = '0px';
+					bartenderDiv.style.left = (450 * scale) + 'px';
+					bartenderDiv.innerHTML = "<img src='./img/bartender.png'/ height='" + (50 * scale).toString() + "px'>";
+					// Append the canvas element to the DOM
+					bartenderDiv.onclick = function() {
+						alert('Bartender has been notified to assist you.');
+					};
+					this.container.appendChild( bartenderDiv );
 					
 					console.log( 'menu canvas created' );
 				},
+				
 				
 				// Mouse & touch events are merged, so handling touch events by default
 				// and powering sketches using the touches array is recommended for easy
@@ -326,11 +421,11 @@
 					// Set up a delay to delete this after 500 milliseconds (typical double-tap duration)
 					setTimeout(function(){
 						recentTouches.shift();
-					}, 500);
+					}, 400);
 				}
 			});
 		};
-
+		
         Sketch.create({
 
             container: document.getElementById( 'container' ),
@@ -341,12 +436,22 @@
             },
 
             update: function() {
-				if ( !orbitMode ) {
+				if ( mode === 2 ) {
 					xOffset = 2 + sin( this.millis * 0.009 ) * 60;
 					yOffset = 2 + cos( this.millis * 0.009 ) * 60
-				} else {
+				} else if ( mode === 1 ){
 					startTheta = this.millis * 0.007;
 					endTheta = this.millis * 0.007 + PI / 4;
+				} else {
+					var z, particle;
+
+					for ( z = particles.length - 1; z >= 0; z-- ) {
+
+						particle = particles[z];
+
+						if ( particle.alive ) particle.move();
+						else pool.push( particles.splice( z, 1 )[0] );
+					}
 				}
             },
 
@@ -361,11 +466,35 @@
 				if ( this.keys.M ) {
 					this.clear();
 					console.log('mode changed');
-					orbitMode = !orbitMode;
+					if ( mode === 2 ) {
+						mode = 0;
+					} else {
+						mode = mode + 1;
+					}
 				}
 				
             },
 
+			spawn: function( x, y ) {
+
+				if ( particles.length >= MAX_PARTICLES )
+					pool.push( particles.shift() );
+
+				particle = pool.length ? pool.pop() : new Particle();
+				particle.init( x, y, random( 5, 40 ) );
+
+				particle.wander = random( 0.5, 2.0 );
+				particle.color = random( COLOURS );
+				particle.drag = random( 0.9, 0.99 );
+
+				theta = random( TWO_PI );
+				force = random( 2, 8 );
+
+				particle.vx = sin( theta ) * force;
+				particle.vy = cos( theta ) * force;
+
+				particles.push( particle );
+			},
 			
             // Mouse & touch events are merged, so handling touch events by default
             // and powering sketches using the touches array is recommended for easy
@@ -376,7 +505,7 @@
 				var touch = this.touches[ this.touches.length - 1 ];
 				// If the new touch is within 10 pixels of a recent touch, then do something:
 				for ( var i = 0; i < recentTouches.length; i++ ) {
-					if ( (touch.x - recentTouches[i].x) < 10 && (touch.y - recentTouches[i].y) < 10) {
+					if ( abs(touch.x - recentTouches[i].x) < 20 && abs(touch.y - recentTouches[i].y) < 20) {
 						//alert('Double-tap detected.');
 						this.fillStyle = this.strokeStyle = '#FF7519';
 						this.lineWidth = 4;
@@ -393,15 +522,15 @@
 				
 				// Append the last touch event to our recentTouches array
 				recentTouches.push( touch );
-				// Set up a delay to delete this after 500 milliseconds (typical double-tap duration)
+				// Set up a delay to delete this after 400 milliseconds (typical double-tap duration)
 				setTimeout(function(){
 					recentTouches.shift();
-				}, 500);
+				}, 400);
 				//alert('Touch start at x=' + touch.x + ', y=' + touch.y);
 			},
 			
             touchmove: function() {
-				if ( orbitMode ) {
+				if ( mode === 1 ) {
 					for ( var i = this.touches.length - 1, touch; i >= 0; i-- ) {
 
 						touch = this.touches[i];
@@ -419,7 +548,7 @@
 						// And 3 arcs that match the background to 'erase' the rest
 						//this.fillStyle =
 						this.strokeStyle = '#444452';
-						this.lineWidth = max(abs(touch.dx), abs(touch.dy)) + 8;
+						this.lineWidth = Math.max(abs(touch.dx), abs(touch.dy)) + 8;
 						// This arc 'erases' the rest of the orange particle 
 						this.beginPath();
 						this.arc( touch.x, touch.y, 50, endTheta, startTheta );
@@ -434,7 +563,7 @@
 						this.stroke();
 						
 					}
-				} else { // If we aren't in orbit mode
+				} else if (mode === 2) { // If we are in line mode
 					for ( var i = this.touches.length - 1, touch; i >= 0; i-- ) {
 
 						touch = this.touches[i];
@@ -451,12 +580,23 @@
 						this.stroke();
 						
 					}
+				} else { // If we are in particle mode
+					var particle, theta, force, touch, max, i, j, n;
+
+					for ( i = 0, n = this.touches.length; i < n; i++ ) {
+
+						touch = this.touches[i], max = random( 1, 4 );
+						for ( j = 0; j < max; j++ ) {
+						  this.spawn( touch.x, touch.y );
+						}
+
+					}
 				}
             },
 			
 			// We have to erase each orange particle we created when we stop touching the screen
 			touchend:  function() {
-				if ( orbitMode ) {
+				if ( mode === 1 ) {
 					// Too drastic for our end game, but this clears the whole canvas if we don't have any touch events or objects drawn
 					if ( this.touches.length === 0 && !objectsDrawn ) {
 						this.clear();
@@ -477,6 +617,17 @@
 						this.arc( touch.ox , touch.oy , 50, startTheta, endTheta);
 						this.stroke();
 					}
+				}
+			},
+			draw: function() {
+				if(mode === 0) {
+					this.globalCompositeOperation  = 'lighter';
+					this.clear();
+					for ( var i = particles.length - 1; i >= 0; i-- ) {
+						particles[i].draw( this );
+					}
+				} else {
+					this.globalCompositeOperation  = 'source-over';
 				}
 			}
         });

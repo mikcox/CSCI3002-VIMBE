@@ -51,19 +51,22 @@ html, body {
 .specialsClass {
 	position: absolute;
 	width: 250px;
-	height: 385px;
+	height: 365px;
 	font-size: 20px;
 	z-index: 2;
+	overflow-x: hidden;
+	overflow-y: auto;
 }
 
 .specialsClass table{
 	width: 250px;
 	text-align: center;
+	border: 1px solid #575763;
 }
 
 .specialsClass table, tr, td{
 	color: white;
-	border: 1px solid white;
+	/*border: 1px solid #999999;*/
 	text-overflow:ellipsis;
 }
 
@@ -74,19 +77,22 @@ html, body {
 .byAlcoholTypeClass {
 	position: absolute;
 	width: 250px;
-	height: 385px;
+	height: 365px;
 	font-size: 20px;
 	z-index: 2;
+	overflow-x: hidden;
+	overflow-y: auto;
 }
 
 .byAlcoholTypeClass table{
 	width: 250px;
 	text-align: center;
+	border: 1px solid #575763;
 }
 
 .byAlcoholTypeClass table, tr, td{
 	color: white;
-	border: 1px solid white;
+	/*border: 1px solid white;*/
 	text-overflow:ellipsis;
 }
 
@@ -103,7 +109,7 @@ html, body {
 
 .drinkSubMenu table, tr, td{
 	color: white;
-	border: 1px solid white;
+	border-bottom: 1px solid #999999;
 	text-overflow:ellipsis;
 }
 
